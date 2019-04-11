@@ -1,0 +1,164 @@
+<html>
+<title>Blurb </title>
+<h1>Blurb</h1>
+<body>
+This will constitute the only help or Info page of this application.
+
+First to the maximum extent possible, this is copyright
+Martin M. Raivio under
+<A HREF="https://www.gnu.org/licenses/gpl.html">
+GNU copyleft version 3. </a>
+<br>
+It uses <A HREF="https://www.qt.io">
+qt5</a> and
+<A HREF="https://riverbankcomputing.com/software/pyqt/intro" >
+
+ pyqt5 </a> which have other licenses. 
+<p>
+
+It is highly likely that I will only be the only person that ever uses
+this. Consequently it will always be alpha or beta software and rough
+around the edges and will only have features I need. For example there will 
+never be a &quot;bookmarks &quot; 
+button. If anybody wants to change the default bookmarks, (s)he will have
+to edit the bookmarks.html file. 
+<p>Nevertheless I will make this version of  Murdbrowser &copy;
+(or maybe MurdBrowser &copy depending on how I'm feeling) 
+available to the world at some time. There are various versions of
+Murdbrowser ie. Qt4, Gtk2, and Gtk3 versions, this being MurdBrowqt5 &copy   
+<p>Think of this not as a usable application but a starting point
+for your investigation of browser design, Qt, pyqt, and python.
+<H2> What you need to know </H2>
+If you want to drag this click on the time label (where the cursor
+should become a hand)<br>
+To move between pages use the up down arrows or the mouse wheel on the
+time label between the up down arrows.<br>
+You can re-size this to some extent from the right side of the status
+bar, the yellow thing at the top.<br>
+In the middle the Icon that most sites supply will be shown once the
+site is loaded. Left clicking on this should put that site address onto
+your clipboard. I find this at times useful to know. <br>
+The rest of the controls are fairly self explanatory.
+
+<BR><b>F12</b> brings up search text pop up.
+<BR><b>F11</b> toggles between regular maximized and minimized.
+<BR><b>F9</b> hides the title bar but it is still available by moving
+mouse cursor to the top<br>
+The <b>Spt</b> button turns on and off javascript. Sometimes doing so and
+reloading gets rid of extraneous junk if all you want to do is read
+some text, but some sites show nothing with javascript off. <br>
+The <b>Plg</b> button was used when Flash (which is now pretty much
+ redundant) seemed essential, but it should still turn Plugins on and
+off. Put something like  <b>libpepflashplayer.so</b>
+in <b>/usr/lib/PepperFlash/</b>, 
+or consult Qt5 docs for where to put plugins. 
+
+In the menu <b>Rss</b> brings up a selection of news sites, if you want more
+or less this will involve editing <b>RSSitms</b> in the <b>rs6a.py</b>
+file.<br>
+
+<b>Block</b> is a crude low level add blocker really a site
+blocker) and changing
+what can be blocked and the default involves editing  <b> self.BLOK
+</b> and <b>Junk</b> in rs6a.py.<br>  
+In the menu there is <b>Quit and Clear</b> this will remove all Cookies 
+and other tracking info but you will loose automated logins. 
+
+<H3>Philosophy etc.</H3>
+The main thing I am trying to do is have as much window space as
+possible for use by the browser and not have a huge part of the screen
+occupied by mostly useless icons and stuff.
+To this end I made the main app for all this is a QStackedWidget rather than a
+QMainWindow.
+ 
+<p>This does however make moving and re-sizing not ideal.
+ Also in
+my perversity I put the status bar on the top right rather than the
+bottom right; this makes re-sizing impossible most of the time except in
+Windows.
+As for the overall size I have made it .95 of the full size
+of the screen. If you want to change the default size
+look for<br> <code>self.setMinimumSize(pfw,pfh)</code><br> and change that.  
+
+<p>
+This is <b> not a tabbed browser </b>.
+I do not use tabs they take up room and add zero functionality. In 
+previous version I had a combo box, but I have found that leaving it out
+and using up down arrows and the mouse wheel serves me just as well.
+
+<p>
+
+
+<h3>Justification Excuses Whining etc. </h3>
+This is written in python using pyqt, but &quot;python is slow you
+say&quot; , yes this may indeed be the case but actually 99.99% of the
+real work is done by the qt and webengine libraries developed by the
+clever people at Qt and Google. This little browser of mine is really
+the equivalent of makeup on the face of an actor. So as an example
+I tried the Octane speed test using Qupzilla a pure C++ implementation of
+the code and got 28027 on this computer. My humble little browser
+recorded 28047 . It is likely however that in slow computer with minimum ram
+the C++ browser will be faster. 
+<br>Also I have used code like <br>
+<code>from PyQt5.QtGui import *</code> <br>
+whereas it seems to be the fashion to only import what is used. Doing
+so may be of benefit in some computers.
+
+
+
+<h3>Idiosyncrasies foibles and maybe even bugs    </h3>
+Normally this is started by typing<b>
+<em>python  MurdBrowqt5.py  </em></b> or something similar depending 
+on the name of my latest executable. You may have to type
+<b><em>python3</em></b> or maybe <b><em>python2</em></b> 
+but you are already running
+this so you have figured it out.
+<br>There is one other consideration.
+<a name="startup"></a>
+Some websites work better if they are told that you are running a
+particular browser, so in Settings picking an agent other than the 
+Default may make things work better on some sites. 
+<p>
+
+<BR><b>F12</b> has been my key to search for text ever since I used
+jed and jove in text mode linux 2, so this will forever be the case. 
+But in the code look for
+<br> <code>fndtxt.setShortcut(Qt.Key_F12 )</code><br>
+and change it. In fact I have put the  &quot;Ctrl-F &quot; option
+there. All you have to do is uncomment it and comment the F12 line. 
+Similarly you may be able to alter other things you find
+annoying.
+
+<p>
+<h3>Making this your browser </h3>
+There is no install scipt with this. My thought would be to have a 
+<code>bin </code> directory at your user locatation and add it to your
+path. Just typing the name of this should invoke python and start it.
+It should work with either python2 or python3. If started in a terminal 
+many of my print statements may supply a clue if something is going
+wrong, alternatively if you do not want all that babble but a <code> # 
+</code> in front of those statements. Some things should be changeable
+even by a relatively unknowledgeable user; just remember that python 
+although pretty much the <b>easiest</b> to use programing language
+capable of doing usefull work is <b> very </b> picky about line
+spacing, so it is best to use a python savy editor. I use xjed.
+
+Since the code is the source, it should be easy to modify. Also qt has
+<b>excellent</b> documentation especially compared to gtk. 
+About the only thing you have to do
+most of the time to translate from qt to pyqt is remove the occurrences
+of &quot;:&quot; and &quot;::&quot; and replace them with a
+&quot;.&quot; . 
+<br>
+
+<br>If compiling qt5 sending PROPRIETARY_CODECS=yes to the compiler 
+will result in more things working.
+<br>Whether this is legal or not
+at your location is up to you.</br> In the default Arch Linux  install
+most sites work quite well.
+<br>Some copy protected stuff may still not
+work but amazingly the advertisements <b>always</b> work!</br>
+
+
+</body>
+</html>

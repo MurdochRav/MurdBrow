@@ -1,0 +1,10 @@
+Pyqt in Windoze
+python -m pip install -U pip setuptools
+
+pip install 'SomeProject'
+
+in 
+duckduck try windows install python
+
+
+first entry should be python.org download page
