@@ -103,7 +103,11 @@ class Findr( QInputDialog):
 class  MurdStak( QStackedWidget):
     def __init__(self,a):
         QStackedWidget.__init__(self)
-        self.PgSvTyp = 2  # IE mht
+        qv = int(qVersion ().split('.')[1])
+        if qv > 7:
+            self.PgSvTyp = 2  # IE mht
+        else:
+            self.PgSvTyp = 1  # htm
         #print '{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{102'
         self.frstpg = False
         if len(a)> 1 :
@@ -118,7 +122,7 @@ class  MurdStak( QStackedWidget):
             print ('Tray') # YES on windows
         else:
             print ("No Tray")
-        
+        self.setWindowIcon (QIcon("images/Dog8.png"))
         mrgn = QMargins(1,30,1,1)
         ##mrgn = QMargins(1,26,1,1)
         self.setContentsMargins(mrgn)
@@ -133,19 +137,26 @@ class  MurdStak( QStackedWidget):
         #self.toolBar =QToolBar('Controls')
         self.toolBar.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
         self.toolBar.setMinimumSize(1500 , 20)
+        if IsKde():
+            self.toolBar.setStyleSheet("QToolBar {background-color: \
+            rgba(200, 255, 125,  190);  }")
+            ### KDE plasma puts extraneous black 
+            # background behind toolbar I say it is a bug
+            # either in  KDE or qt
+        else:
+            self.toolBar.setStyleSheet("QToolBar {background-color: \
+            rgba(200, 255, 125,  90);  }")
         
         
         self.toolBar.setMouseTracking(True)
         
         murdSize(self)
         
-        #self.toolBar.setStyleSheet("QToolBar {background-color: \
-               #rgba(55, 40, 255, 0);  }")
-        #self.toolBar.setAttribute(Qt.WA_TranslucentBackground)
-        ####self.setAttribute(Qt.WA_TranslucentBackground)
-        efct =QGraphicsDropShadowEffect()
-        efct.setBlurRadius(10.0)
-        self.toolBar.setGraphicsEffect(efct)
+        # tool bar not work in plsama with graphics
+        if not IsKde():
+            efct =QGraphicsDropShadowEffect()
+            efct.setBlurRadius(10.0)
+            self.toolBar.setGraphicsEffect(efct)
         
         
         self.toolBar.addAction("Menu")
@@ -488,10 +499,10 @@ class  MurdStak( QStackedWidget):
             
             self.sTart = False
             
-        elif str(self.currentWidget().page().url()).find('murdQUIT')> -1:
+        elif str(self.currentWidget().page().url()).find('/murdQUIT')> -1:
             print ('406  QUIT')
             sys.exit()
-       
+            # need / above for windoze 10
         elif self.dnld:
             c = self.count()
             print ('lastwid is ' , self.widget(c-1).url(), 'of' , str(c))
@@ -507,10 +518,8 @@ class  MurdStak( QStackedWidget):
         print ('crnt' , crnt ,zm) 
         crnt.setZoomFactor (zm)
         #crnt.setFocus()
-        '''
-        elif str(self.url()).find('murdRSTR')> -1:
-            print ('409  RESTORE')
-            ##'''
+        
+        
         
             
           
@@ -589,6 +598,17 @@ class  MurdStak( QStackedWidget):
             return
         elif d.__class__.__name__ == "MurdPage":
             #self.sAving = True
+            qv = int(qVersion ().split('.')[1])
+            if qv < 8:
+                print ('Save Will not Work Automatically')
+                hd =  'console.log(document.documentElement.innerHTML)'
+                cwp = self.currentWidget().page()
+                cwp.svScrNm = self.svnm
+                cwp.svScr = True
+                cwp.runJavaScript(hd)
+                
+                
+                
             try:
                 svd = d.save(self.svnm,self.PgSvTyp)
                 # 2 means mht
@@ -659,7 +679,7 @@ class  MurdStak( QStackedWidget):
         elif t == 'About':
             inf = 'Murdbrowqt5 .0012  Copyright Martin M Raivio\n \
             email murdochrav at yahoo.ca\n \
-            for more info click Blurb on start page'
+            for more info click Blurb on start page '
             
             abt =  QMessageBox.about(self,'About',inf)
         
@@ -925,12 +945,17 @@ class  MurdStak( QStackedWidget):
            # should really make sure [2]
            # IS gl widget
            # it just reports as being a widget ???
-           print ('[2] IS ', self.currentWidget().children()[2].__class__)
-           self.currentWidget().children()[2].update()
+           # in Debian THAT is action thing
+           for chld in self.currentWidget().children():
+               #print ('Kiddie class' , chld.__class__.__name__)
+               if chld.__class__.__name__ == 'QOpenGLWidget':
+                   chld.update()
+           #print ('[2] IS ', self.currentWidget().children()[2].__class__)
+           #self.currentWidget().children()[2].update()
            #### YESSS THIS WORKS 
            # should test that wid is glwidget
            # no guarantee that that will be [2]
-        
+           # OK doing that in Deb qt 5.7 it Is
              
     def chngd(self):
         # common stuff for previous or next
@@ -1049,8 +1074,11 @@ class MurdVu(QWebEngineView):
 class MurdPage( QWebEnginePage):
     isig = pyqtSignal(QIcon, QWebEnginePage)
     def __init__(self,parent):
+        
         QWebEnginePage.__init__(self,parent)
         print ('768 parent' , parent.main)
+        self.svScr = False
+        self.svScrNm = ''
         # did segfault after here
         self.mAin = parent.main
         self.sAving = False
@@ -1078,33 +1106,26 @@ class MurdPage( QWebEnginePage):
         # createStandardContextMenu() for Page
         ### It is working !!!!!!  almost
         #below only necessary for qt less than 5.8
-    ''' qt 5.9 does its own save 
-        I did save with g4.py
-        a gtk3 thingy
-    def save(self,s,w):
-        print '782 save', s
-        # s is saved page name
-        # w just a number
-        # this is not necessary 
-        # for qt 5.8 plus as it is handled
-        u2 = self.url().toDisplayString()
-        print 'murdpage save' , s ,w , u2
-        self.sv =  s.replace('mht' , 'htm')
-        s2 = 'file://' +s
-        try:
-            import g4
-            #gtk = g4()
-            gtkb = g4.SimpWin([self,u2,s2])
-            # except webkitgtk still running
-        except:
-            print 'no g4'
-            #scr =  'console.log(document.documentElement.innerHTML)'
-            scr = 'h=(document.documentElement.innerHTML)'
-            self.runJavaScript(scr  ,self.svhtm) 
-       # comment out for qt 5.8 or higher
-       # mht save is handled automatiacally
-       # '''
+    
+    def javaScriptConsoleMessage(self,l,m,x,s):
+        ### runJavaScript comes here 
+        #level,msg,line#,src
+        print ('79 SAVE ??' , self.svScr )
+        if self.svScr :
+            # YES gets here from cwp.runJavaScript(hd)
+            import codecs
+            #print ("would save" , m)
+            savm =  u'<htm> ' + m + u' </htm>'
+            f = codecs.open(self.svScrNm,'w', "utf-8")
+            f.write(savm)
+            self.svScr = False
+            self.svScrNm = ''
+        
+        
+        
+        
     def svhtm(self,h):
+        # Not Used !!!
         print ('save as' , self.sv)
         inf = 'Saving text only as ' + self.sv + ' ".mht" only works for\
           Qt 5.8 or newer '
@@ -1182,84 +1203,6 @@ if __name__ == "__main__" :
 # link IS https://github.com/davisking/dlib/archive/v19.7/dlib-19.7.tar.gz
 # what is going on is I think at site that name is actually a link to
 # https://codeload.github.com/davisking/dlib/tar.gz/v19.7
-'''
-my safari on slack 142 IS     537
-
-entstring example
-Mozilla/5.0 (Macintosh; U; PPC Mac OS X; fi-fi) AppleWebKit/420+ (KHTML, like Gecko) Safari/419.3
-
-Mozilla/5.0 (Macintosh; U; PPC Mac OS X; de-de) AppleWebKit/125.2 (KHTML, like Gecko) Safari/125.7
-
-Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-us) AppleWebKit/312.8 (KHTML, like Gecko) Safari/312.6
-
-Mozilla/5.0 (Windows; U; Windows NT 5.1; cs-CZ) AppleWebKit/523.15 (KHTML, like Gecko) Version/3.0 Safari/523.15
-
-Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/528.16 (KHTML, like Gecko) Version/4.0 Safari/528.16
-
-Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_6; it-it) AppleWebKit/528.16 (KHTML, like Gecko) Version/4.0 Safari/528.16
-
-Mozilla/5.0 (Windows; U; Windows NT 6.1; zh-HK) AppleWebKit/533.18.1 (KHTML, like Gecko) Version/5.0.2 Safari/533.18.5
-
-Mozilla/5.0 (Windows; U; Windows NT 6.1; sv-SE) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
-
-Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/6.1.3 Safari/537.75.14
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/600.3.10 (KHTML, like Gecko) Version/8.0.3 Safari/600.3.10
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11) AppleWebKit/601.1.39 (KHTML, like Gecko) Version/9.0 Safari/601.1.39
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13) AppleWebKit/603.1.13 (KHTML, like Gecko) Version/10.1 Safari/603.1.13
-
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15
-phone   
-
-
-v4 on iOS
-v4 on iOS	v6 on iOS6
-v6 on iOS6
-Useragentstring example
-Mozilla/5.0 (iPad; U; CPU OS 4_2_1 like Mac OS X; ja-jp) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8C148 Safari/6533.18.5
-
-Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; es-es) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B360 Safari/531.21.10
-
-Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_0 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8A293 Safari/6531.22.7
-
-Mozilla/5.0 (iPad; U; CPU OS 4_3_3 like Mac OS X; de-de) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8J2 Safari/6533.18.5
-
-NokiaC3-00/5.0 (04.60) Profile/MIDP-2.1 Configuration/CLDC-1.1 Mozilla/5.0 AppleWebKit/420+ (KHTML, like Gecko) Safari/420+
-
-Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10A5376e
-
-Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53
-
-MobileSafari/9537.53 CFNetwork/672.0.8 Darwin/14.0.0
-These are features in feaure request
-QWebEnginePage::Geolocation	1	Location hardware or service.
-QWebEnginePage::MediaAudioCapture	2	Audio capture devices, such as microphones.
-QWebEnginePage::MediaVideoCapture	3	Video devices, such as cameras.
-QWebEnginePage::MediaAudioVideoCapture	4	Both audio and video capture devices.
-QWebEnginePage::MouseLock	5	Mouse locking, which locks the mouse pointer to the 
-web view and is typically used in games.
-QWebEnginePage::DesktopVideoCapture	6	Video output capture, that is, the capture of the user's display, 
-for screen sharing purposes for example. (Added in Qt 5.10)
-QWebEnginePage::DesktopAudioVideoCapture	7	Both audio and video output capture. (Added in Qt 5.10)
-
-
-
-'''
-### urps infinite loop after blurb ????
-## when I load local file
-## seems to maybe be qt bug in slackware it 
-## at Getting url is chrome-error://chromewebdata/
-## works just fine on slackware
-## Hell with it make blurb avaliable only
-# at main page
 #python 3 octane 27110 python2 34859
 # tried again and got 34929 for python3
 #######Chrome/69.0.3497.128 before update feb2019

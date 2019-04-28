@@ -20,6 +20,17 @@ MurdFindKey = Qt.Key_F12
 MurdFindKey ="Ctrl+F" 
 # for windoze people
 
+def IsKde():
+    try:
+        return os.environ['XDG_CURRENT_DESKTOP'] ==  'KDE'
+    except:
+        return False
+ 
+
+
+
+
+
 FoNT = 25
 # default font works out to 1.25
 #BROWNAME = 'Murdbrow E'
@@ -55,9 +66,13 @@ Agnts= ["Default", \
          #1 means htm with directories
          # 0 means htm Only IE. nop pics etc
          # so below in THAT order
-Pgsvtp= ['htm ONE only main htm', 'htm ALL with data in directories',\
+
+qv = int(qVersion ().split('.')[1])
+if qv > 7:
+    Pgsvtp= ['htm ONE only main htm', 'htm ALL with data in directories',\
 'mht ALL in onefile' ]
-        
+else:
+    Pgsvtp= ['htm ONE only using java script']
         
         
         
@@ -79,6 +94,8 @@ FoNT = 25
 
 def  HOMEPG():
     # below comes from qt
+    # NOT a clue where it is in docs but it works
+    # it IS in QtCore of pyqt??
     qtver =  qVersion ()
     try:
         plfrm = str( QSysInfo().prettyProductName())
