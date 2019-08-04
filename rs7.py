@@ -76,7 +76,7 @@ else:
         
         
         
-FeAtures={ 1:"Geolocation",2:"Audio Capture",3:"Video Capture",\
+FeAtures={0:"Notification", 1:"Geolocation",2:"Audio Capture",3:"Video Capture",\
          4:"Audio and Video Capture", 5:"Mouse Lock", 6:"Display Capture",\
          7:"Desktop Audio Video Capture"}
 
